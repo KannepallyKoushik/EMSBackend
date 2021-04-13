@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+
 const authRoutes = require("./routes/authRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 //Middlewares
 app.use(express.json());
@@ -11,5 +13,7 @@ app.use(cors());
 
 // 1. Register and login Routes
 app.use("/auth", authRoutes);
+
+app.use("/dashboard", dashboardRoutes);
 
 module.exports = app;
