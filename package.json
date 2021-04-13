@@ -13,7 +13,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "npm start",
+    "test": "npm run dev",
     "dev": "nodemon server.js",
     "start": "node server.js"
   },

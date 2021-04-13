@@ -14,6 +14,7 @@ app.use(cors());
 // 1. Register and login Routes
 app.use("/auth", authRoutes);
 
+//2. Application Routes
 app.use("/dashboard", dashboardRoutes);
 
 module.exports = app;

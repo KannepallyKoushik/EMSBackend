@@ -24,16 +24,22 @@ exports.register = async (req, res) => {
     const bcryptPassword = await bcrypt.hash(password, salt);
 
     //4. Enter the new user into the DB
-    const newUser = await pool.query(
+    await pool.query(
       "Insert into users(username , user_email,user_password , user_role) values($1,$2,$3,$4)",
       [name, email, bcryptPassword, role]
     );
 
     //res.json(newUser.rows[0]);
     //5. Generating our jwt token
-    console.log(newUser);
+    const userdata = await pool.query(
+      "select * from users where user_email = $1 and user_role = $2",
+      [email, role]
+    );
 
-    const token = jwtGenerator(newUser.userid, newUser.user_role);
+    const token = jwtGenerator(
+      userdata.rows[0].userid,
+      userdata.rows[0].user_role
+    );
     res.json({
       token,
     });
