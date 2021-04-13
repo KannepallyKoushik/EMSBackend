@@ -6,13 +6,15 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1"
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.5.1"
   },
   "devDependencies": {},
   "scripts": {
     "test": "npm start",
-    "dev" : "nodemon server.js",
+    "dev": "nodemon server.js",
     "start": "node server.js"
   },
   "repository": {

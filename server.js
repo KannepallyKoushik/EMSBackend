@@ -1,12 +1,4 @@
-const express = require("express");
-const app = express();
-const cors = require("cors");
-
-//Middlewares
-app.use(express.json());
-app.use(cors());
-
-//ROUTES
+const app = require("./app");
 
 //Server Running
 app.listen(8000, () => {
