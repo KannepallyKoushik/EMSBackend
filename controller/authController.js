@@ -1,7 +1,27 @@
+const nodemailer = require("nodemailer");
+var otpGenerator = require("otp-generator");
+require("dotenv").config;
+
 const bcrypt = require("bcrypt");
 
 const pool = require("../db");
 const jwtGenerator = require("../utils/jwtGenerator");
+
+const contactEmail = nodemailer.createTransport({
+  service: process.env.NODE_MAILER_SERVICE,
+  auth: {
+    user: process.env.ADMIN_EMAIL,
+    pass: process.env.ADMIN_EMAIL_PASSWORD,
+  },
+});
+
+contactEmail.verify((error) => {
+  if (error) {
+    console.log(error.message);
+  } else {
+    console.log("Node Mailer working");
+  }
+});
 
 exports.register = async (req, res) => {
   try {
@@ -16,6 +36,9 @@ exports.register = async (req, res) => {
 
     if (user.rowCount !== 0) {
       return res.status(401).send("User Already exists");
+    }
+    if (role == "admin") {
+      return res.status(403).send("You can't Register as Admin");
     }
 
     //3. Bcrypt the user pasword
@@ -40,7 +63,7 @@ exports.register = async (req, res) => {
       userdata.rows[0].userid,
       userdata.rows[0].user_role
     );
-    res.json({
+    res.status(201).json({
       token,
     });
   } catch (error) {
@@ -90,5 +113,68 @@ exports.verify = async (req, res) => {
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Server Error");
+  }
+};
+
+exports.report = async (req, res) => {
+  try {
+    //1. Destructuring the body
+    const { name, email, message } = req.body;
+    const mail = {
+      from: email,
+      to: process.env.ADMIN_EMAIL,
+      subject: "REPORTING EMS ISSUE",
+      html: `<p>Name: ${name}</p>
+             <p>Email: ${email}</p>
+             <p>Message: ${message}</p>`,
+    };
+    contactEmail.sendMail(mail, (error) => {
+      if (error) {
+        res.status(503).json({ status: "ERROR could not send mail" });
+      } else {
+        res.status(201).json({ status: "Message Sent" });
+      }
+    });
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    //1.Destructuring Body
+    const { email, role } = req.body;
+
+    const user = await pool.query(
+      "select * from users where user_email = $1 and user_role = $2",
+      [email, role]
+    );
+
+    if (user.rowCount === 0) {
+      return res.status(401).send("User Does Not Exist");
+    } else {
+      const otp = otpGenerator.generate(6, {
+        upperCase: false,
+        specialChars: false,
+        alphabets: false,
+      });
+
+      const mail = {
+        from: process.env.ADMIN_EMAIL,
+        to: email,
+        subject: "OTP for Resetting Password",
+        html: `<p>Here is your otp: ${otp}</p>`,
+      };
+
+      contactEmail.sendMail(mail, (error) => {
+        if (error) {
+          res.status(500).json({ status: "ERROR could not send mail" });
+        } else {
+          res.status(201).json({ status: "Message Sent" });
+        }
+      });
+    }
+  } catch (error) {
+    console.error(error.message);
   }
 };

@@ -11,6 +11,12 @@ router.post("/register", validInfo, authController.register);
 router.post("/login", authController.login);
 
 //3. Verifying token
-router.get("/isverify", authorization, authController.verify);
+router.post("/isverify", authorization, authController.verify);
+
+//4. Reporting Issue to Admin
+router.post("/report", authController.report);
+
+//4. ForgotPassword
+router.post("/forgotpassword", authController.forgotPassword);
 
 module.exports = router;
