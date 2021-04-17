@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-var otpGenerator = require("otp-generator");
+var CryptoJS = require("crypto-js");
 require("dotenv").config;
 
 const bcrypt = require("bcrypt");
@@ -111,7 +111,6 @@ exports.verify = async (req, res) => {
   try {
     res.json(true);
   } catch (error) {
-    console.error(error.message);
     res.status(500).send("Server Error");
   }
 };
@@ -145,25 +144,26 @@ exports.forgotPassword = async (req, res) => {
     //1.Destructuring Body
     const { email, role } = req.body;
 
-    const user = await pool.query(
-      "select * from users where user_email = $1 and user_role = $2",
-      [email, role]
-    );
+    //2. Check if a user exists with such emailID
+    const user = await pool.query("select * from users where user_email = $1", [
+      email,
+    ]);
 
     if (user.rowCount === 0) {
       return res.status(401).send("User Does Not Exist");
     } else {
-      const otp = otpGenerator.generate(6, {
-        upperCase: false,
-        specialChars: false,
-        alphabets: false,
-      });
+      //3. Encrypt the userID if user existed and append it to changePassword URL
+      const user_id = user.rows[0].userid;
+
+      var key = CryptoJS.enc.Base64.parse(process.env.jwtSecret);
+      var iv = CryptoJS.enc.Base64.parse("                ");
+      var encrypted = CryptoJS.AES.encrypt(user_id, key, { iv: iv });
 
       const mail = {
         from: process.env.ADMIN_EMAIL,
         to: email,
-        subject: "OTP for Resetting Password",
-        html: `<p>Here is your otp: ${otp}</p>`,
+        subject: "Link For Resetting Password",
+        html: `<p>click here to reset your password:<br/><br/> ${process.env.Client_Address}/changePassword/${encrypted}</p>`,
       };
 
       contactEmail.sendMail(mail, (error) => {
@@ -176,5 +176,41 @@ exports.forgotPassword = async (req, res) => {
     }
   } catch (error) {
     console.error(error.message);
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    //1.Destructuring Body
+    const { encryptedID, password } = req.body;
+
+    //2. Decrypting ID
+    var key = CryptoJS.enc.Base64.parse(process.env.jwtSecret);
+    var iv = CryptoJS.enc.Base64.parse("                ");
+    const decrypted = CryptoJS.AES.decrypt(encryptedID, key, { iv: iv });
+    const user_id = decrypted.toString(CryptoJS.enc.Utf8);
+
+    //3. Checking if a user existed with this ID
+    const user = await pool.query("select * from users where userid = $1", [
+      user_id,
+    ]);
+    if (user.rowCount === 0) {
+      return res.status(401).send("Unauthorised Access");
+    } else {
+      //4. Encrypting the Password and Updating
+
+      const saltRound = 10;
+      const salt = await bcrypt.genSalt(saltRound);
+      const bcryptPassword = await bcrypt.hash(password, salt);
+
+      await pool.query("UPDATE users SET user_password=$1 where userid=$2", [
+        bcryptPassword,
+        user_id,
+      ]);
+      res.status(201).send("Succesfully Changed Password");
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
   }
 };

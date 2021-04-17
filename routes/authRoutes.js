@@ -19,4 +19,7 @@ router.post("/report", authController.report);
 //4. ForgotPassword
 router.post("/forgotpassword", authController.forgotPassword);
 
+//5. Change Password
+router.post("/changePassword", authController.changePassword);
+
 module.exports = router;
