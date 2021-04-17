@@ -22,4 +22,7 @@ router.post("/forgotpassword", authController.forgotPassword);
 //5. Change Password
 router.post("/changePassword", authController.changePassword);
 
+//6. Verify Email
+router.post("/verifyEmail", authController.verifyEmail);
+
 module.exports = router;

@@ -14,7 +14,7 @@ async function test(name, email, password) {
     await pool.query("Drop table if exists users");
 
     await pool.query(
-      "create Table users(userid uuid Primary Key Default uuid_generate_v4(),username varchar(255) Not Null,user_email varchar(255) Not Null,user_password varchar(255) Not Null,user_role varchar(100) Not Null)"
+      "create Table users(userid uuid Primary Key Default uuid_generate_v4(),username varchar(255) Not Null,user_email varchar(255) Not Null,user_password varchar(255) Not Null,user_role varchar(100) Not Null,verified varchar(100) Not Null Default 'no')"
     );
 
     const saltRound = 10;
@@ -22,8 +22,8 @@ async function test(name, email, password) {
     const bcryptPassword = await bcrypt.hash(password, salt);
 
     await pool.query(
-      "Insert into users(username , user_email,user_password , user_role) values($1,$2,$3,$4)",
-      [name, email, bcryptPassword, "admin"]
+      "Insert into users(username , user_email,user_password , user_role,verified) values($1,$2,$3,$4,$5)",
+      [name, email, bcryptPassword, "admin", "yes"]
     );
   } catch (error) {
     console.error(error.message);

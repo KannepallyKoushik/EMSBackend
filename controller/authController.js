@@ -52,20 +52,34 @@ exports.register = async (req, res) => {
       [name, email, bcryptPassword, role]
     );
 
-    //res.json(newUser.rows[0]);
-    //5. Generating our jwt token
+    //5.  Encrypt the userID if user existed and append it to changePassword URL
     const userdata = await pool.query(
       "select * from users where user_email = $1 and user_role = $2",
       [email, role]
     );
 
-    const token = jwtGenerator(
-      userdata.rows[0].userid,
-      userdata.rows[0].user_role
-    );
-    res.status(201).json({
-      token,
+    const user_id = userdata.rows[0].userid;
+
+    const mail = {
+      from: process.env.ADMIN_EMAIL,
+      to: email,
+      subject: "Link for verifying your Email",
+      html: `<p>click here to verify your Email:<br/><br/> ${process.env.Client_Address}/verifyEmail/${user_id}</p>`,
+    };
+
+    contactEmail.sendMail(mail, (error) => {
+      if (error) {
+        res.status(500).json({ status: "ERROR could not send mail" });
+      } else {
+        res.status(201).json({
+          status: "Email Sent",
+        });
+      }
     });
+
+    res
+      .status(201)
+      .send("Successfully Registered, Please verify your email before login");
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Server Error");
@@ -87,7 +101,12 @@ exports.login = async (req, res) => {
       return res.status(401).send("Email / Password is incorrect");
     }
 
-    //3. Check if incoming password is the same as in DB
+    //3. Check if User verified his Email
+    if (user.rows[0].verified == "no") {
+      return res.status(401).send("Please verify your email before loggin in");
+    }
+
+    //4. Check if incoming password is the same as in DB
     const validPassword = await bcrypt.compare(
       password,
       user.rows[0].user_password
@@ -97,7 +116,7 @@ exports.login = async (req, res) => {
       return res.status(401).send("Email or Passwd incorrect");
     }
 
-    //4. Give them JWT token
+    //5. Give them JWT token
     const token = jwtGenerator(user.rows[0].userid, user.rows[0].user_role);
 
     res.json({ token });
@@ -173,6 +192,31 @@ exports.forgotPassword = async (req, res) => {
           res.status(201).json({ status: "Message Sent" });
         }
       });
+    }
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    //1. Destructuring Body
+    const { user_id } = req.body;
+
+    //3. Checking if a user existed with this ID
+    const user = await pool.query("select * from users where userid = $1", [
+      user_id,
+    ]);
+    if (user.rowCount === 0) {
+      return res.status(401).send("Unauthorised Access");
+    } else {
+      await pool.query("UPDATE users SET verified=$1 where userid=$2", [
+        "yes",
+        user_id,
+      ]);
+      res
+        .status(201)
+        .send("Successfully verified your Email you can login now");
     }
   } catch (error) {
     console.error(error.message);
