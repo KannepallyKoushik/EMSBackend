@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-var CryptoJS = require("crypto-js");
+//var CryptoJS = require("crypto-js");
 require("dotenv").config;
 
 const bcrypt = require("bcrypt");
@@ -161,7 +161,7 @@ exports.report = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     //1.Destructuring Body
-    const { email, role } = req.body;
+    const { email } = req.body;
 
     //2. Check if a user exists with such emailID
     const user = await pool.query("select * from users where user_email = $1", [
@@ -174,15 +174,11 @@ exports.forgotPassword = async (req, res) => {
       //3. Encrypt the userID if user existed and append it to changePassword URL
       const user_id = user.rows[0].userid;
 
-      var key = CryptoJS.enc.Base64.parse(process.env.jwtSecret);
-      var iv = CryptoJS.enc.Base64.parse("                ");
-      var encrypted = CryptoJS.AES.encrypt(user_id, key, { iv: iv });
-
       const mail = {
         from: process.env.ADMIN_EMAIL,
         to: email,
         subject: "Link For Resetting Password",
-        html: `<p>click here to reset your password:<br/><br/> ${process.env.Client_Address}/changePassword/${encrypted}</p>`,
+        html: `<p>click here to reset your password:<br/><br/> ${process.env.Client_Address}/changePassword/${user_id}</p>`,
       };
 
       contactEmail.sendMail(mail, (error) => {
@@ -229,10 +225,8 @@ exports.changePassword = async (req, res) => {
     const { encryptedID, password } = req.body;
 
     //2. Decrypting ID
-    var key = CryptoJS.enc.Base64.parse(process.env.jwtSecret);
-    var iv = CryptoJS.enc.Base64.parse("                ");
-    const decrypted = CryptoJS.AES.decrypt(encryptedID, key, { iv: iv });
-    const user_id = decrypted.toString(CryptoJS.enc.Utf8);
+
+    const user_id = encryptedID;
 
     //3. Checking if a user existed with this ID
     const user = await pool.query("select * from users where userid = $1", [
