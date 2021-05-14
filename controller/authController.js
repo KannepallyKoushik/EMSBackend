@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer");
-//var CryptoJS = require("crypto-js");
-require("dotenv").config;
+const enivironment = require("dotenv").config;
 
 const bcrypt = require("bcrypt");
 
@@ -173,13 +172,23 @@ exports.forgotPassword = async (req, res) => {
     } else {
       //3. Encrypt the userID if user existed and append it to changePassword URL
       const user_id = user.rows[0].userid;
+      const role = user.rows[0].user_role;
 
-      const mail = {
-        from: process.env.ADMIN_EMAIL,
-        to: email,
-        subject: "Link For Resetting Password",
-        html: `<p>click here to reset your password:<br/><br/> ${process.env.Client_Address}/changePassword/${user_id}</p>`,
-      };
+      if (role == "admin") {
+        var mail = {
+          from: process.env.ADMIN_EMAIL,
+          to: email,
+          subject: "Link For Resetting Password",
+          html: `<p>click here to reset your password:<br/><br/> ${process.env.Admin_Client_Address}/changePassword/${user_id}</p>`,
+        };
+      } else {
+        mail = {
+          from: process.env.ADMIN_EMAIL,
+          to: email,
+          subject: "Link For Resetting Password",
+          html: `<p>click here to reset your password:<br/><br/> ${process.env.Client_Address}/changePassword/${user_id}</p>`,
+        };
+      }
 
       contactEmail.sendMail(mail, (error) => {
         if (error) {
