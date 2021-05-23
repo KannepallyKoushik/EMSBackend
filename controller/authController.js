@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
     ]);
 
     if (user.rowCount !== 0) {
-      return res.status(401).send("User Already exists");
+      return res.status(405).send("User Already exists");
     }
 
     //3. Bcrypt the user pasword
