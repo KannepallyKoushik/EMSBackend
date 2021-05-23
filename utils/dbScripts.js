@@ -42,7 +42,7 @@ async function test(email, password) {
     );
 
     await pool.query(
-      "CREATE TABLE course(cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,c_code VARCHAR (50) Not NULL,cname VARCHAR ( 50 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),fac_id INT,CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),offered BOOLEAN NOT NULL DEFAULT FALSE)"
+      "CREATE TABLE course(cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,c_code VARCHAR (50) Not NULL UNIQUE,cname VARCHAR ( 50 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),fac_id INT,CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),offered BOOLEAN NOT NULL DEFAULT FALSE)"
     );
 
     await pool.query(

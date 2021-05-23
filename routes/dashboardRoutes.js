@@ -1,6 +1,5 @@
 const router = require("express").Router();
 
-const pool = require("../db");
 const authorization = require("../middleware/authorization");
 const dashboardContoller = require("../controller/dashboardController");
 
@@ -12,8 +11,14 @@ router.post("/admin/addDept", authorization, dashboardContoller.addDepartment);
 
 router.post("/admin/addFaculty", authorization, dashboardContoller.addFaculty);
 
+router.post("/admin/addCourse", authorization, dashboardContoller.addCourse);
+
+router.post("/admin/addBatch", authorization, dashboardContoller.addBatch);
+
 router.get("/getDept", authorization, dashboardContoller.getDepartment);
 
 router.get("/getFaculty", authorization, dashboardContoller.getFaculty);
+
+router.get("/getCourses", authorization, dashboardContoller.getCourses);
 
 module.exports = router;

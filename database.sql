@@ -35,7 +35,7 @@ CREATE TABLE faculty(
 
 CREATE TABLE course(
 	cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	c_code VARCHAR (50) Not NULL,
+	c_code VARCHAR (50) UNIQUE Not NULL,
 	cname VARCHAR ( 50 ) NOT NULL,
 	dep_id INT,
 	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
