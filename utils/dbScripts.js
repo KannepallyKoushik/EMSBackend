@@ -11,7 +11,15 @@ const pool = new Pool({
 
 async function test(name, email, password) {
   try {
+    await pool.query("Drop table if exists admin");
+    await pool.query("Drop table if exists approvedcourse");
+    await pool.query("Drop table if exists feedback");
+    await pool.query("Drop table if exists event");
+    await pool.query("Drop table if exists course");
+    await pool.query("Drop table if exists faculty");
     await pool.query("Drop table if exists users");
+    await pool.query("Drop table if exists department");
+    await pool.query("Drop table if exists batch");
 
     await pool.query(
       "create Table users(userid uuid Primary Key Default uuid_generate_v4(),username varchar(255) Not Null,user_email varchar(255) Not Null,user_password varchar(255) Not Null,user_role varchar(100) Not Null,verified varchar(100) Not Null Default 'no')"
