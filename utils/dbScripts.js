@@ -70,4 +70,4 @@ async function test(email, password) {
   }
 }
 
-test("cb.en.p2cse20017@cb.students.amrita.edu", "abcd@1234");
+test("emsamritacb@gmail.com", "abcd@1234");
