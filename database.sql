@@ -4,44 +4,13 @@ CREATE EXTENSION "uuid-ossp";
 --set extension of uuid before this
 CREATE TABLE admin(
    	ad_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	ad_email VARCHAR ( 255 ) UNIQUE NOT NULL,
-   	password VARCHAR ( 50 ) NOT NULL
+	ad_email VARCHAR ( 100 ) UNIQUE NOT NULL,
+   	password VARCHAR ( 255 ) NOT NULL
 );
 
 CREATE TABLE department(
    	dep_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   	dep_name VARCHAR(50) UNIQUE  NOT NULL
-);
-
-CREATE TABLE users(
-	userid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	username VARCHAR ( 50 ) NOT NULL,
-	user_email VARCHAR ( 50 ) UNIQUE NOT NULL,
-	dep_id INT,
-	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
-	mobile VARCHAR(10),
-	user_password VARCHAR ( 50 ) NOT NULL,
-	verified string NOT NULL DEFAULT "no"
-	batch_id INT,CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id)
-);
-
-CREATE TABLE faculty(
-	fac_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	facname VARCHAR ( 100 ) NOT NULL,
-	dep_id INT,
-	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
-	fac_email VARCHAR ( 255 ) UNIQUE NOT NULL
-);
-
-CREATE TABLE course(
-	cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	c_code VARCHAR (50) UNIQUE Not NULL,
-	cname VARCHAR ( 50 ) NOT NULL,
-	dep_id INT,
-	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
-	fac_id INT,
-	CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),
-	offered BOOLEAN NOT NULL DEFAULT FALSE	
+   	dep_name VARCHAR(100) UNIQUE  NOT NULL
 );
 
 CREATE TABLE batch(
@@ -50,15 +19,55 @@ CREATE TABLE batch(
 	pass_out VARCHAR(50) UNIQUE NOT NULL
 );
 
+CREATE TABLE users(
+	userid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	username VARCHAR ( 100 ) NOT NULL,
+	user_email VARCHAR ( 100 ) UNIQUE NOT NULL,
+	dep_id INT,
+	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
+	mobile VARCHAR(15),
+	user_password VARCHAR ( 50 ) NOT NULL,
+	verified string NOT NULL DEFAULT "no"
+	batch_id INT,CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id),
+	timestamp timestamp NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE faculty(
+	fac_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	facname VARCHAR ( 100 ) NOT NULL,
+	dep_id INT,
+	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
+	fac_email VARCHAR ( 100 ) UNIQUE NOT NULL
+);
+
+
 CREATE TABLE event(
 	eid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	ev_name VARCHAR ( 50 ) NOT NULL,
+	ev_name VARCHAR ( 250 ) NOT NULL,
 	dep_id INT,
 	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
 	ev_deadline VARCHAR ( 50 ) NOT NULL,
+	timestamp timestamp NOT NULL DEFAULT NOW(),
 	batch_id INT,
 	CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id)
 );
+
+
+CREATE TABLE course(
+	cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	c_code VARCHAR (50) UNIQUE Not NULL,
+	cname VARCHAR ( 100 ) NOT NULL,
+	dep_id INT,
+	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
+	fac_id INT,
+	CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),
+	eid INT,
+	CONSTRAINT fk_eid FOREIGN KEY(eid) REFERENCES event(eid),
+	offered BOOLEAN NOT NULL DEFAULT FALSE	
+);
+
+
+
 
 CREATE TABLE approvedcourse(
 	ap_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -76,7 +85,7 @@ CREATE TABLE approvedcourse(
 
 CREATE TABLE feedback(
 	feed_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	feedback VARCHAR ( 255 ) NOT NULL,
+	feedback TEXT NOT NULL,
 	cid INT,
 	CONSTRAINT fk_course FOREIGN KEY(cid) REFERENCES course(cid),
 	batch_id INT,
