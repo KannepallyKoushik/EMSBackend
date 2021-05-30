@@ -17,15 +17,15 @@ router.post("/admin/login", validInfo, authController.adminLogin);
 router.post("/isverify", authorization, authController.verify);
 
 //4. Reporting Issue to Admin
-router.post("/report", authController.report);
+router.post("/report", validInfo, authController.report);
 
 //4. ForgotPassword
-router.post("/forgotpassword", authController.forgotPassword);
+router.post("/forgotpassword", validInfo, authController.forgotPassword);
 
 //5. Change Password
-router.post("/changePassword", authController.changePassword);
+router.post("/changePassword", validInfo, authController.changePassword);
 
 //6. Verify Email
-router.post("/verifyEmail", authController.verifyEmail);
+router.post("/verifyEmail", validInfo, authController.verifyEmail);
 
 module.exports = router;

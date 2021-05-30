@@ -237,6 +237,16 @@ exports.verifyEmail = async (req, res) => {
     //1. Destructuring Body
     const { user_id } = req.body;
 
+    if (![user_id].every(Boolean)) {
+      console.log("hey");
+      return res.status(400).json("Missing Credentials");
+    }
+    if (!user_id.replace(/\s/g, "").length) {
+      return res
+        .status(400)
+        .json("Request Credentials may contain empty Spaces");
+    }
+
     //3. Checking if a user existed with this ID
     const user = await pool.query("select * from users where userid = $1", [
       user_id,
