@@ -30,7 +30,7 @@ async function test(email, password) {
     );
 
     await pool.query(
-      "CREATE TABLE batch(batch_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,pass_in VARCHAR(50) UNIQUE NOT NULL,pass_out VARCHAR(50) UNIQUE NOT NULL)"
+      "CREATE TABLE batch(batch_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,pass_in VARCHAR(50) NOT NULL,pass_out VARCHAR(50) NOT NULL)"
     );
 
     await pool.query(

@@ -191,20 +191,6 @@ exports.addBatch = async (req, res) => {
     if (req.role == "admin") {
       const { batchIn, batchOut } = req.body;
 
-      if (batchIn == batchOut) {
-        return res
-          .status(405)
-          .send("Admission and Passout cannot be in same year.");
-      }
-
-      if (batchIn > batchOut) {
-        return res.status(405).send("Admission should be before Passing out.");
-      }
-
-      if (batchOut - batchIn > 6) {
-        return res.status(405).send("Course cannot be more than 6 years.");
-      }
-
       const batch = await pool.query(
         "select * from batch where pass_in = $1 and pass_out=$2",
         [batchIn, batchOut]
@@ -407,6 +393,8 @@ exports.publishRequestFeedback = async (req, res) => {
         "Insert into event(ev_name,dep_id,ev_deadline,batch_id) values($1,$2,$3,$4)",
         [eventDescription, depID, deadline, batchID]
       );
+
+      res.status(201).send("Successfully added event");
     } else {
       res.status(403).json("Not Authorise");
     }
