@@ -34,13 +34,19 @@ module.exports = function (req, res, next) {
   }
 
   if (req.path == "/admin/addCourse") {
-    const { courseCode, courseName, depID } = req.body;
-    if (![courseCode, courseName, depID].every(Boolean)) {
+    const { courseCode, courseName, cDescription, depID, courseCredit } =
+      req.body;
+    if (
+      ![courseCode, courseName, cDescription, depID, courseCredit].every(
+        Boolean
+      )
+    ) {
       return res.status(400).json("Missing Request Arguments");
     }
     if (
       !courseCode.replace(/\s/g, "").length ||
-      !courseName.replace(/\s/g, "").length
+      !courseName.replace(/\s/g, "").length ||
+      !cDescription.replace(/\s/g, "").length
     ) {
       return res
         .status(400)
@@ -85,10 +91,16 @@ module.exports = function (req, res, next) {
   }
 
   if (req.path == "/admin/setEvent") {
-    const { eventDescription, batchID, depID, deadline, courses } = req.body;
-    if (![eventDescription, batchID, depID, deadline, courses].every(Boolean)) {
+    const { eventDescription, batchID, depID, deadline, courses, creditTotal } =
+      req.body;
+    if (
+      ![eventDescription, batchID, depID, deadline, courses, creditTotal].every(
+        Boolean
+      )
+    ) {
       return res.status(400).json("Missing Request Arguments");
     }
+
     if (
       !eventDescription.replace(/\s/g, "").length ||
       !deadline.replace(/\s/g, "").length
@@ -97,11 +109,13 @@ module.exports = function (req, res, next) {
         .status(400)
         .json("Request Attributes may contain empty Spaces");
     }
+
     if (typeof courses !== "undefined" && courses.length === 0) {
       return res
         .status(400)
         .json("List of courses to Create an Event are missing");
     }
+
     for (const element of courses) {
       if (![element.course_id, element.fac_id].every(Boolean)) {
         return res.status(400).json("Missing Arguments of Courses");
@@ -111,9 +125,11 @@ module.exports = function (req, res, next) {
 
   if (req.path == "/admin/RequestFeedback") {
     const { eventDescription, depID, batchID, deadline } = req.body;
+
     if (![eventDescription, depID, batchID, deadline].every(Boolean)) {
       return res.status(400).json("Missing Request Arguments");
     }
+
     if (
       !eventDescription.replace(/\s/g, "").length ||
       !deadline.replace(/\s/g, "").length

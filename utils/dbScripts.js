@@ -42,11 +42,11 @@ async function test(email, password) {
     );
 
     await pool.query(
-      "CREATE TABLE event(eid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,ev_name VARCHAR ( 250 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),ev_deadline VARCHAR ( 50 ) NOT NULL,timestamp timestamp NOT NULL DEFAULT NOW(),batch_id INT,CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id))"
+      "CREATE TABLE event(eid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,ev_name VARCHAR ( 250 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),ev_deadline VARCHAR ( 50 ) NOT NULL,timestamp timestamp NOT NULL DEFAULT NOW(),batch_id INT,CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id),event_type VARCHAR(100) NOT NULL,credit_total INT DEFAULT NULL)"
     );
 
     await pool.query(
-      "CREATE TABLE course(cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,c_code VARCHAR (50) Not NULL UNIQUE,cname VARCHAR ( 100 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),fac_id INT,CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),eid INT,CONSTRAINT fk_event FOREIGN KEY(eid) REFERENCES event(eid),offered BOOLEAN NOT NULL DEFAULT FALSE)"
+      "CREATE TABLE course(cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,c_code VARCHAR (50) Not NULL UNIQUE,cname VARCHAR ( 100 ) NOT NULL,cdescription VARCHAR ( 225 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),fac_id INT,CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),eid INT,CONSTRAINT fk_event FOREIGN KEY(eid) REFERENCES event(eid),course_credit INT NOT NULL, offered BOOLEAN NOT NULL DEFAULT FALSE)"
     );
 
     await pool.query(

@@ -135,7 +135,8 @@ exports.getFaculty = async (req, res) => {
 exports.addCourse = async (req, res) => {
   try {
     if (req.role == "admin") {
-      const { courseCode, courseName, depID } = req.body;
+      const { courseCode, courseName, cDescription, depID, courseCredit } =
+        req.body;
 
       const course = await pool.query(
         "select * from course where c_code = $1",
@@ -147,8 +148,8 @@ exports.addCourse = async (req, res) => {
       }
 
       await pool.query(
-        "Insert into course(c_code,cname,dep_id) values($1,$2,$3)",
-        [courseCode, courseName, depID]
+        "Insert into course(c_code,cname,cdescription,dep_id,course_credit) values($1,$2,$3,$4,$5)",
+        [courseCode, courseName, cDescription, depID, courseCredit]
       );
 
       res.status(201).send("Course Added Successfully");
@@ -292,7 +293,8 @@ exports.setPassword = async (req, res) => {
 
 exports.setSubmissionDeadline = async (req, res) => {
   try {
-    const { eventDescription, batchID, depID, deadline, courses } = req.body;
+    const { eventDescription, batchID, depID, deadline, courses, creditTotal } =
+      req.body;
 
     if (req.role == "admin") {
       const batch = await pool.query("select * from batch where batch_id=$1", [
@@ -301,7 +303,7 @@ exports.setSubmissionDeadline = async (req, res) => {
       if (batch.rowCount == 0) {
         return res
           .status(400)
-          .json("There is so Batch for which is event is requested to create");
+          .json("There is no Batch for which is event is requested to create");
       }
 
       const dept = await pool.query(
@@ -312,7 +314,7 @@ exports.setSubmissionDeadline = async (req, res) => {
         return res
           .status(400)
           .json(
-            "There is no Depatment for which event is requested to be created"
+            "There is no Department for which event is requested to be created"
           );
       }
 
@@ -341,8 +343,8 @@ exports.setSubmissionDeadline = async (req, res) => {
       }
 
       const event = await pool.query(
-        "Insert into event(ev_name,dep_id,ev_deadline,batch_id) values($1,$2,$3,$4)  RETURNING eid",
-        [eventDescription, depID, deadline, batchID]
+        "Insert into event(ev_name,dep_id,ev_deadline,batch_id,event_type,credit_total) values($1,$2,$3,$4,$5,$6)  RETURNING eid",
+        [eventDescription, depID, deadline, batchID, "electives", creditTotal]
       );
       const event_id = event.rows[0].eid;
 
@@ -390,8 +392,8 @@ exports.publishRequestFeedback = async (req, res) => {
       }
 
       await pool.query(
-        "Insert into event(ev_name,dep_id,ev_deadline,batch_id) values($1,$2,$3,$4)",
-        [eventDescription, depID, deadline, batchID]
+        "Insert into event(ev_name,dep_id,ev_deadline,batch_id,event_type) values($1,$2,$3,$4,$5)",
+        [eventDescription, depID, deadline, batchID, "feedback"]
       );
 
       res.status(201).send("Successfully added event");

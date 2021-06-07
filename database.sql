@@ -49,7 +49,9 @@ CREATE TABLE event(
 	ev_deadline VARCHAR ( 50 ) NOT NULL,
 	timestamp timestamp NOT NULL DEFAULT NOW(),
 	batch_id INT,
-	CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id)
+	CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id),
+	event_type VARCHAR(100) NOT NULL,
+	credit_total INT DEFAULT NULL,
 );
 
 
@@ -57,13 +59,15 @@ CREATE TABLE course(
 	cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	c_code VARCHAR (50) UNIQUE Not NULL,
 	cname VARCHAR ( 100 ) NOT NULL,
+	cdescription VARCHAR (250) NOT NULL,
 	dep_id INT,
 	CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),
 	fac_id INT,
 	CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),
 	eid INT,
 	CONSTRAINT fk_eid FOREIGN KEY(eid) REFERENCES event(eid),
-	offered BOOLEAN NOT NULL DEFAULT FALSE	
+	course_credit INT NOT NULL,
+	offered BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 
