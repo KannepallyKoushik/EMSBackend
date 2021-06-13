@@ -148,6 +148,12 @@ module.exports = function (req, res, next) {
         .json("Request Attributes may contain empty Spaces");
     }
   }
+  if (req.path == "/getCourse") {
+    const { depID } = req.body;
 
+    if (![depID].every(Boolean)) {
+      return res.status(400).json("Missing Request Arguments");
+    }
+  }
   next();
 };

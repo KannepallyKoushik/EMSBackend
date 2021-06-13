@@ -73,7 +73,12 @@ router.post(
   adminDashboardContoller.setPassword
 );
 
-router.post("/getCourse", authorization, adminDashboardContoller.getCourse);
+router.post(
+  "/getCourse",
+  authorization,
+  dashValidators,
+  adminDashboardContoller.getCourse
+);
 
 // 3.Student Related Posts Requests
 router.post(
