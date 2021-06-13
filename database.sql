@@ -29,7 +29,8 @@ CREATE TABLE users(
 	user_password VARCHAR ( 50 ) NOT NULL,
 	verified string NOT NULL DEFAULT "no"
 	batch_id INT,CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id),
-	timestamp timestamp NOT NULL DEFAULT NOW()
+	timestamp timestamp NOT NULL DEFAULT NOW(),
+	address text
 );
 
 CREATE TABLE faculty(
@@ -67,6 +68,7 @@ CREATE TABLE course(
 	eid INT,
 	CONSTRAINT fk_eid FOREIGN KEY(eid) REFERENCES event(eid),
 	course_credit INT NOT NULL,
+	demo_link TEXT NOT NULL,
 	offered BOOLEAN NOT NULL DEFAULT FALSE
 );
 

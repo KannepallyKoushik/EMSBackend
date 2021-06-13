@@ -2,73 +2,85 @@ const router = require("express").Router();
 
 const authorization = require("../middleware/authorization");
 const dashValidators = require("../middleware/dashboardValidators");
-const dashboardContoller = require("../controller/dashboardController");
+const adminDashboardContoller = require("../controller/dashboardController");
+const studentDashboardContoller = require("../controller/studentDashboardControllers");
+const studentDashValidators = require("../middleware/studentDashboardValidators");
 
 // -----------------------------       GET Requests         -----------------------------------
 
-router.get("/", authorization, dashboardContoller.getData);
+router.get("/", authorization, studentDashboardContoller.getData);
 
-router.get("/admin/", authorization, dashboardContoller.getAdminData);
+router.get("/admin/", authorization, adminDashboardContoller.getAdminData);
 
-router.get("/getDept", authorization, dashboardContoller.getDepartment);
+router.get("/getDept", authorization, adminDashboardContoller.getDepartment);
 
-router.get("/getFaculty", authorization, dashboardContoller.getFaculty);
+router.get("/getFaculty", authorization, adminDashboardContoller.getFaculty);
 
-router.get("/getCourses", authorization, dashboardContoller.getCourses);
+router.get("/getCourses", authorization, adminDashboardContoller.getCourses);
 
-router.get("/getCourse", authorization, dashboardContoller.getCourse);
-
-router.get("/getBatches", authorization, dashboardContoller.getBatches);
+router.get("/getBatches", authorization, adminDashboardContoller.getBatches);
 
 // -----------------------------      POST Requests         -----------------------------------
 
+// 1.Admin Related Posts Requests
 router.post(
   "/admin/addDept",
   authorization,
   dashValidators,
-  dashboardContoller.addDepartment
+  adminDashboardContoller.addDepartment
 );
 
 router.post(
   "/admin/addFaculty",
   authorization,
   dashValidators,
-  dashboardContoller.addFaculty
+  adminDashboardContoller.addFaculty
 );
 
 router.post(
   "/admin/addCourse",
   authorization,
   dashValidators,
-  dashboardContoller.addCourse
+  adminDashboardContoller.addCourse
 );
 
 router.post(
   "/admin/addBatch",
   authorization,
   dashValidators,
-  dashboardContoller.addBatch
-);
-
-router.post(
-  "/setPassword",
-  authorization,
-  dashValidators,
-  dashboardContoller.setPassword
+  adminDashboardContoller.addBatch
 );
 
 router.post(
   "/admin/setEvent",
   authorization,
   dashValidators,
-  dashboardContoller.setSubmissionDeadline
+  adminDashboardContoller.setSubmissionDeadline
 );
 
 router.post(
   "/admin/RequestFeedback",
   authorization,
   dashValidators,
-  dashboardContoller.publishRequestFeedback
+  adminDashboardContoller.publishRequestFeedback
+);
+
+// 2.Common to Admin and Student Related Posts Requests
+router.post(
+  "/setPassword",
+  authorization,
+  dashValidators,
+  adminDashboardContoller.setPassword
+);
+
+router.post("/getCourse", authorization, adminDashboardContoller.getCourse);
+
+// 3.Student Related Posts Requests
+router.post(
+  "/updateProfile",
+  authorization,
+  studentDashValidators,
+  studentDashboardContoller.updateProfile
 );
 
 module.exports = router;

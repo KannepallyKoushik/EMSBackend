@@ -34,7 +34,7 @@ async function test(email, password) {
     );
 
     await pool.query(
-      "CREATE TABLE users(userid uuid Primary Key Default uuid_generate_v4(),username VARCHAR ( 100 ) NOT NULL,user_email VARCHAR ( 100 ) UNIQUE NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),mobile VARCHAR(15),user_password VARCHAR ( 255 ) NOT NULL,verified VARCHAR ( 10 ) NOT NULL DEFAULT 'no', batch_id INT,CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id),timestamp timestamp NOT NULL DEFAULT NOW())"
+      "CREATE TABLE users(userid uuid Primary Key Default uuid_generate_v4(),username VARCHAR ( 100 ) NOT NULL,user_email VARCHAR ( 100 ) UNIQUE NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),mobile VARCHAR(15),user_password VARCHAR ( 255 ) NOT NULL,verified VARCHAR ( 10 ) NOT NULL DEFAULT 'no', batch_id INT,CONSTRAINT fk_batch FOREIGN KEY(batch_id) REFERENCES batch(batch_id),timestamp timestamp NOT NULL DEFAULT NOW() , address text)"
     );
 
     await pool.query(
@@ -46,7 +46,7 @@ async function test(email, password) {
     );
 
     await pool.query(
-      "CREATE TABLE course(cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,c_code VARCHAR (50) Not NULL UNIQUE,cname VARCHAR ( 100 ) NOT NULL,cdescription VARCHAR ( 225 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),fac_id INT,CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),eid INT,CONSTRAINT fk_event FOREIGN KEY(eid) REFERENCES event(eid),course_credit INT NOT NULL, offered BOOLEAN NOT NULL DEFAULT FALSE)"
+      "CREATE TABLE course(cid INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,c_code VARCHAR (50) Not NULL UNIQUE,cname VARCHAR ( 100 ) NOT NULL,cdescription VARCHAR ( 225 ) NOT NULL,dep_id INT,CONSTRAINT fk_dep FOREIGN KEY(dep_id) REFERENCES department(dep_id),fac_id INT,CONSTRAINT fk_fac FOREIGN KEY(fac_id) REFERENCES faculty(fac_id),eid INT,CONSTRAINT fk_event FOREIGN KEY(eid) REFERENCES event(eid),course_credit INT NOT NULL,demo_link TEXT NOT NULL, offered BOOLEAN NOT NULL DEFAULT FALSE)"
     );
 
     await pool.query(

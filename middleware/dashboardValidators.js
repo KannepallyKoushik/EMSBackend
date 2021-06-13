@@ -115,11 +115,20 @@ module.exports = function (req, res, next) {
         .status(400)
         .json("List of courses to Create an Event are missing");
     }
-
+    const dummycourseid = [];
     for (const element of courses) {
-      if (![element.course_id, element.fac_id].every(Boolean)) {
+      dummycourseid.push(element.course_id);
+      if (![element.course_id, element.fac_id, element.demo].every(Boolean)) {
         return res.status(400).json("Missing Arguments of Courses");
       }
+    }
+    const courseset = new Set(dummycourseid);
+    if (dummycourseid.length !== courseset.size) {
+      return res
+        .status(400)
+        .json(
+          "Repeated Course selections found(Courses Selected should be Unique in an Event)"
+        );
     }
   }
 

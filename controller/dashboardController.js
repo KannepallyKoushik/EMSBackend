@@ -2,25 +2,6 @@ const enivironment = require("dotenv").config;
 const bcrypt = require("bcrypt");
 const pool = require("../db");
 
-exports.getData = async (req, res) => {
-  try {
-    const role = req.role;
-    const userid = req.user;
-    if (role == "student") {
-      const user = await pool.query(
-        "Select userid,username,user_email,dep_id,mobile,batch_id from users where userid = $1",
-        [userid]
-      );
-      res.status(200).json(user.rows[0]);
-    } else {
-      res.status(200).json(admin.rows[0]);
-    }
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send("Server Error");
-  }
-};
-
 exports.getAdminData = async (req, res) => {
   try {
     const role = req.role;
@@ -350,8 +331,8 @@ exports.setSubmissionDeadline = async (req, res) => {
 
       for (const element of courses) {
         await pool.query(
-          "Update course set fac_id = $1,offered=$2,eid=$3 where cid=$4",
-          [element.fac_id, true, event_id, element.course_id]
+          "Update course set fac_id = $1,offered=$2,eid=$3,demo_link=$4 where cid=$5",
+          [element.fac_id, true, event_id, element.demo, element.course_id]
         );
       }
 
