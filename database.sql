@@ -68,7 +68,7 @@ CREATE TABLE course(
 	eid INT,
 	CONSTRAINT fk_eid FOREIGN KEY(eid) REFERENCES event(eid),
 	course_credit INT NOT NULL,
-	demo_link TEXT NOT NULL,
+	demo_link TEXT,
 	offered BOOLEAN NOT NULL DEFAULT FALSE
 );
 
