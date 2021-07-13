@@ -19,6 +19,56 @@ exports.getData = async (req, res) => {
   }
 };
 
+exports.getNotification = async (req, res) => {
+  try {
+    const role = req.role;
+
+    if (role == "student") {
+      const { depID, batchID } = req.body;
+
+      var today = new Date();
+      const date = formatDate(today);
+
+      const data = await pool.query(
+        "select * from event where dep_id=$1 and batch_id=$2 and ev_deadline >= $3",
+        [depID, batchID, date]
+      );
+
+      return res.status(200).json(data.rows);
+    } else {
+      return res.status(403).json("Not Authorized.");
+    }
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send("Server Error");
+  }
+};
+
+exports.getPastNotification = async (req, res) => {
+  try {
+    const role = req.role;
+
+    if (role == "student") {
+      const { depID, batchID } = req.body;
+
+      var today = new Date();
+      const date = formatDate(today);
+
+      const data = await pool.query(
+        "select * from event where dep_id=$1 and batch_id=$2 and ev_deadline < $3",
+        [depID, batchID, date]
+      );
+
+      return res.status(200).json(data.rows);
+    } else {
+      return res.status(403).json("Not Authorized.");
+    }
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send("Server Error");
+  }
+};
+
 exports.updateProfile = async (req, res) => {
   try {
     const role = req.role;
@@ -45,3 +95,15 @@ exports.updateProfile = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
+function formatDate(date) {
+  var d = new Date(date),
+    month = "" + (d.getMonth() + 1),
+    day = "" + d.getDate(),
+    year = d.getFullYear();
+
+  if (month.length < 2) month = "0" + month;
+  if (day.length < 2) day = "0" + day;
+
+  return [year, month, day].join("-");
+}

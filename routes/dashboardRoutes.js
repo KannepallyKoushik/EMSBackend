@@ -88,4 +88,18 @@ router.post(
   studentDashboardContoller.updateProfile
 );
 
+router.post(
+  "/getNotification",
+  authorization,
+  studentDashValidators,
+  studentDashboardContoller.getNotification
+);
+
+router.post(
+  "/getPastNotification",
+  authorization,
+  studentDashValidators,
+  studentDashboardContoller.getPastNotification
+);
+
 module.exports = router;
