@@ -102,4 +102,29 @@ router.post(
   studentDashboardContoller.getPastNotification
 );
 
+router.post(
+  "/getEventData",
+  authorization,
+  studentDashValidators,
+  studentDashboardContoller.getEventData
+);
+
+router.post(
+  "/submitPreferences",
+  authorization,
+  studentDashboardContoller.submitPreferences
+);
+
+router.post(
+  "/getFeedback",
+  authorization,
+  studentDashboardContoller.getFeedback
+);
+
+router.post(
+  "/postFeedback",
+  authorization,
+  studentDashboardContoller.postFeedback
+);
+
 module.exports = router;

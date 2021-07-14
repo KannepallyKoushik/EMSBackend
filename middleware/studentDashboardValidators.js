@@ -35,5 +35,17 @@ module.exports = function (req, res, next) {
     }
   }
 
+  if (req.path == "/getEventData") {
+    const { eid, event_type } = req.body;
+    if (![eid, event_type].every(Boolean)) {
+      return res.status(400).json("Missing Request Arguments");
+    }
+    if (!event_type.replace(/\s/g, "").length) {
+      return res
+        .status(400)
+        .json("Request Attributes may contain empty Spaces");
+    }
+  }
+
   next();
 };

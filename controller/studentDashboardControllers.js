@@ -96,6 +96,93 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+exports.getEventData = async (req, res) => {
+  try {
+    const role = req.role;
+
+    if (role == "student") {
+      const { eid, event_type } = req.body;
+
+      if (event_type == "electives") {
+        const data = await pool.query(
+          "Select course.cid, course.c_code, course.cname, faculty.facname, faculty.fac_email ,course.cdescription, course.course_credit, course.demo_link from course left join faculty on course.fac_id = faculty.fac_id where eid=$1",
+          [eid]
+        );
+        res.status(200).json(data.rows);
+      } else if (event_type == "feedback") {
+        const data = await pool.query(
+          "Select course.cid, course.c_code, course.cname, faculty.facname from course left join faculty on course.fac_id = faculty.fac_id where eid=$1",
+          [eid]
+        );
+        res.status(200).json(data.rows);
+      }
+    } else {
+      res.status(403).json("Not Authorized.");
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+exports.submitPreferences = async (req, res) => {
+  try {
+    if (req.role == "student") {
+      const { totalCredits, courseset, batchID } = req.body;
+      var credits = 0;
+      for (const item of courseset) {
+        credits += item.course_credit;
+      }
+      if (credits != totalCredits) {
+        return res
+          .status(400)
+          .json("Subjects seleted should tally with Total Credits requirement");
+      } else {
+        return res.status(200).send("successfull");
+      }
+    } else {
+      res.status(403).json("Not Authorized.");
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+exports.postFeedback = async (req, res) => {
+  try {
+    if (req.role == "student") {
+      const { feedback, course_id, batchID } = req.body;
+
+      console.log(feedback + " " + course_id + " " + batchID);
+      return res.status(200).send("successfull posted your feedback");
+    } else {
+      res.status(403).json("Not Authorized.");
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+exports.getFeedback = async (req, res) => {
+  try {
+    if (req.role == "student") {
+      const { course_id } = req.body;
+
+      console.log(course_id);
+      return res.status(200).send("Got feedbacks");
+    } else {
+      res.status(403).json("Not Authorized.");
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// ----------------------- Other usefull Functions -------------------------
+
 function formatDate(date) {
   var d = new Date(date),
     month = "" + (d.getMonth() + 1),
