@@ -78,8 +78,8 @@ exports.updateProfile = async (req, res) => {
       const { batchID, branchID, mobNumber, address } = req.body;
 
       await pool.query(
-        "update user set dep_id = $1 , batch_id = $2 , mobile = $3 , address = $4 where userid = $",
-        [batchID, branchID, mobNumber, address]
+        "update users set dep_id = $1 , batch_id = $2 , mobile = $3 , address = $4 where userid = $5",
+        [batchID, branchID, mobNumber, address, userid]
       );
 
       const user = await pool.query(
@@ -101,15 +101,19 @@ exports.getEventData = async (req, res) => {
     const role = req.role;
 
     if (role == "student") {
-      const { eid, event_type } = req.body;
+      const { eid } = req.body;
 
-      if (event_type == "electives") {
+      const eventData = await pool.query("select * from event where eid = $1", [
+        eid,
+      ]);
+
+      if (eventData.rows[0].event_type == "electives") {
         const data = await pool.query(
           "Select course.cid, course.c_code, course.cname, faculty.facname, faculty.fac_email ,course.cdescription, course.course_credit, course.demo_link from course left join faculty on course.fac_id = faculty.fac_id where eid=$1",
           [eid]
         );
         res.status(200).json(data.rows);
-      } else if (event_type == "feedback") {
+      } else if (eventData.rows[0].event_type == "feedback") {
         const data = await pool.query(
           "Select course.cid, course.c_code, course.cname, faculty.facname from course left join faculty on course.fac_id = faculty.fac_id where eid=$1",
           [eid]
@@ -128,7 +132,7 @@ exports.getEventData = async (req, res) => {
 exports.submitPreferences = async (req, res) => {
   try {
     if (req.role == "student") {
-      const { totalCredits, courseset, batchID } = req.body;
+      const { totalCredits, courseset, batchID, deptID } = req.body;
       var credits = 0;
       for (const item of courseset) {
         credits += item.course_credit;
@@ -138,7 +142,13 @@ exports.submitPreferences = async (req, res) => {
           .status(400)
           .json("Subjects seleted should tally with Total Credits requirement");
       } else {
-        return res.status(200).send("successfull");
+        for (const item of courseset) {
+          await pool.query(
+            "Insert into approvedcourse(cid,userid,fac_id,dep_id,batch_id) values($1,$2,$3,$4,$5)",
+            [item.cid, req.user, item.fac_id, deptID, batchID]
+          );
+        }
+        return res.status(200).send("Sucessfully Updated Preferences");
       }
     } else {
       res.status(403).json("Not Authorized.");
@@ -154,7 +164,10 @@ exports.postFeedback = async (req, res) => {
     if (req.role == "student") {
       const { feedback, course_id, batchID } = req.body;
 
-      console.log(feedback + " " + course_id + " " + batchID);
+      await pool.query(
+        "Insert into feedback(feedback,cid,batch_id,userid) values($1,$2,$3,$4)",
+        [feedback, course_id, batchID, req.user]
+      );
       return res.status(200).send("successfull posted your feedback");
     } else {
       res.status(403).json("Not Authorized.");
@@ -170,8 +183,30 @@ exports.getFeedback = async (req, res) => {
     if (req.role == "student") {
       const { course_id } = req.body;
 
-      console.log(course_id);
-      return res.status(200).send("Got feedbacks");
+      const data = await pool.query(
+        "select feedback , pass_in , pass_out  from feedback left join batch on feedback.batch_id = batch.batch_id where cid = $1",
+        [course_id]
+      );
+      return res.status(200).json(data.rows);
+    } else {
+      res.status(403).json("Not Authorized.");
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+exports.getApprovedCourses = async (req, res) => {
+  try {
+    if (req.role == "student") {
+      const user_id = req.user;
+
+      const data = await pool.query(
+        "Select course.c_code , course.cname from approvedcourse left join course on approvedcourse.cid = course.cid where userid = $1",
+        [user_id]
+      );
+      res.status(200).json(data.rows);
     } else {
       res.status(403).json("Not Authorized.");
     }

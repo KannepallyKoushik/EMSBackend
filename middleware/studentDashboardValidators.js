@@ -36,14 +36,35 @@ module.exports = function (req, res, next) {
   }
 
   if (req.path == "/getEventData") {
-    const { eid, event_type } = req.body;
-    if (![eid, event_type].every(Boolean)) {
+    const { eid } = req.body;
+    if (![eid].every(Boolean)) {
       return res.status(400).json("Missing Request Arguments");
     }
-    if (!event_type.replace(/\s/g, "").length) {
+  }
+
+  if (req.path == "/submitPreferences") {
+    const { totalCredits, courseset, batchID } = req.body;
+    if (![totalCredits, courseset, batchID].every(Boolean)) {
+      return res.status(400).json("Missing Request Arguments");
+    }
+  }
+
+  if (req.path == "/postFeedback") {
+    const { feedback, course_id, batchID } = req.body;
+    if (![feedback, course_id, batchID].every(Boolean)) {
+      return res.status(400).json("Missing Request Arguments");
+    }
+    if (!feedback.replace(/\s/g, "").length) {
       return res
         .status(400)
         .json("Request Attributes may contain empty Spaces");
+    }
+  }
+
+  if (req.path == "/getFeedback") {
+    const { course_id } = req.body;
+    if (![course_id].every(Boolean)) {
+      return res.status(400).json("Missing Request Arguments");
     }
   }
 

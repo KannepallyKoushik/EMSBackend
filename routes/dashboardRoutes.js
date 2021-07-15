@@ -10,6 +10,12 @@ const studentDashValidators = require("../middleware/studentDashboardValidators"
 
 router.get("/", authorization, studentDashboardContoller.getData);
 
+router.get(
+  "/getApprovedCourses",
+  authorization,
+  studentDashboardContoller.getApprovedCourses
+);
+
 router.get("/admin/", authorization, adminDashboardContoller.getAdminData);
 
 router.get("/getDept", authorization, adminDashboardContoller.getDepartment);
