@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer");
-//var CryptoJS = require("crypto-js");
-require("dotenv").config;
+const enivironment = require("dotenv").config;
 
 const bcrypt = require("bcrypt");
 
@@ -26,19 +25,15 @@ contactEmail.verify((error) => {
 exports.register = async (req, res) => {
   try {
     //1. Destructure the req.body (name, email , password)
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     //2. Check if user exists (if user exist then throw error)
-    const user = await pool.query(
-      "select * from users where user_email = $1 and user_role = $2",
-      [email, role]
-    );
+    const user = await pool.query("select * from users where user_email = $1", [
+      email,
+    ]);
 
     if (user.rowCount !== 0) {
-      return res.status(401).send("User Already exists");
-    }
-    if (role == "admin") {
-      return res.status(403).send("You can't Register as Admin");
+      return res.status(405).send("User Already exists");
     }
 
     //3. Bcrypt the user pasword
@@ -48,14 +43,14 @@ exports.register = async (req, res) => {
 
     //4. Enter the new user into the DB
     await pool.query(
-      "Insert into users(username , user_email,user_password , user_role) values($1,$2,$3,$4)",
-      [name, email, bcryptPassword, role]
+      "Insert into users(username , user_email,user_password) values($1,$2,$3)",
+      [name, email, bcryptPassword]
     );
 
-    //5.  Encrypt the userID if user existed and append it to changePassword URL
+    //5.  Generating Link for verifying user and sending via email
     const userdata = await pool.query(
-      "select * from users where user_email = $1 and user_role = $2",
-      [email, role]
+      "select * from users where user_email = $1",
+      [email]
     );
 
     const user_id = userdata.rows[0].userid;
@@ -89,13 +84,12 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     //1. Destructure Req.body
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
 
     //2. Check if user Doesn't exist (if not then we throw error)
-    const user = await pool.query(
-      "Select * from users where user_email = $1 and user_role = $2",
-      [email, role]
-    );
+    const user = await pool.query("Select * from users where user_email = $1", [
+      email,
+    ]);
 
     if (user.rows.length === 0) {
       return res.status(401).send("Email / Password is incorrect");
@@ -117,9 +111,40 @@ exports.login = async (req, res) => {
     }
 
     //5. Give them JWT token
-    const token = jwtGenerator(user.rows[0].userid, user.rows[0].user_role);
+    const token = jwtGenerator(user.rows[0].userid, "student");
 
     res.json({ token });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).status("Server Error");
+  }
+};
+
+exports.adminLogin = async (req, res) => {
+  try {
+    //1. Destructure Req.body
+    const { email, password } = req.body;
+
+    //2. Check if user Doesn't exist (if not then we throw error)
+    const user = await pool.query("Select * from admin where ad_email = $1", [
+      email,
+    ]);
+
+    if (user.rows.length === 0) {
+      return res.status(401).send("Email / Password is incorrect");
+    }
+
+    //3. Check if incoming password is the same as in DB
+    const validPassword = await bcrypt.compare(password, user.rows[0].password);
+
+    if (!validPassword) {
+      return res.status(401).send("Email or Passwd incorrect");
+    }
+
+    //5. Give them JWT token
+    const token = jwtGenerator(user.rows[0].ad_id, "admin");
+
+    res.status(201).json({ token });
   } catch (error) {
     console.error(error.message);
     res.status(500).status("Server Error");
@@ -130,6 +155,7 @@ exports.verify = async (req, res) => {
   try {
     res.json(true);
   } catch (error) {
+    console.error(error.message);
     res.status(500).send("Server Error");
   }
 };
@@ -167,28 +193,41 @@ exports.forgotPassword = async (req, res) => {
     const user = await pool.query("select * from users where user_email = $1", [
       email,
     ]);
+    const admin = await pool.query("select * from admin where ad_email = $1", [
+      email,
+    ]);
 
-    if (user.rowCount === 0) {
-      return res.status(401).send("User Does Not Exist");
-    } else {
-      //3. Encrypt the userID if user existed and append it to changePassword URL
+    var mail = {};
+
+    //3. Encrypt the userID if user existed and append it to changePassword URL
+
+    if (user.rowCount !== 0) {
       const user_id = user.rows[0].userid;
-
-      const mail = {
+      mail = {
         from: process.env.ADMIN_EMAIL,
         to: email,
         subject: "Link For Resetting Password",
         html: `<p>click here to reset your password:<br/><br/> ${process.env.Client_Address}/changePassword/${user_id}</p>`,
       };
-
-      contactEmail.sendMail(mail, (error) => {
-        if (error) {
-          res.status(500).json({ status: "ERROR could not send mail" });
-        } else {
-          res.status(201).json({ status: "Message Sent" });
-        }
-      });
+    } else if (admin.rowCount !== 0) {
+      const admin_id = admin.rows[0].ad_id;
+      mail = {
+        from: process.env.ADMIN_EMAIL,
+        to: email,
+        subject: "Link For Resetting Password",
+        html: `<p>click here to reset your password:<br/><br/> ${process.env.Client_Address}/changePassword/${admin_id}</p>`,
+      };
+    } else {
+      return res.status(401).send("User Does Not Exist");
     }
+
+    contactEmail.sendMail(mail, (error) => {
+      if (error) {
+        res.status(500).json({ status: "ERROR could not send mail" });
+      } else {
+        res.status(201).json({ status: "Message Sent" });
+      }
+    });
   } catch (error) {
     console.error(error.message);
   }
@@ -198,6 +237,16 @@ exports.verifyEmail = async (req, res) => {
   try {
     //1. Destructuring Body
     const { user_id } = req.body;
+
+    if (![user_id].every(Boolean)) {
+      console.log("hey");
+      return res.status(400).json("Missing Credentials");
+    }
+    if (!user_id.replace(/\s/g, "").length) {
+      return res
+        .status(400)
+        .json("Request Credentials may contain empty Spaces");
+    }
 
     //3. Checking if a user existed with this ID
     const user = await pool.query("select * from users where userid = $1", [
@@ -225,18 +274,18 @@ exports.changePassword = async (req, res) => {
     const { encryptedID, password } = req.body;
 
     //2. Decrypting ID
-
     const user_id = encryptedID;
 
     //3. Checking if a user existed with this ID
     const user = await pool.query("select * from users where userid = $1", [
       user_id,
     ]);
-    if (user.rowCount === 0) {
-      return res.status(401).send("Unauthorised Access");
-    } else {
-      //4. Encrypting the Password and Updating
+    const admin = await pool.query("select * from admin where ad_id = $1", [
+      user_id,
+    ]);
 
+    //4. Encrypting the Password and Updating
+    if (user.rowCount !== 0) {
       const saltRound = 10;
       const salt = await bcrypt.genSalt(saltRound);
       const bcryptPassword = await bcrypt.hash(password, salt);
@@ -246,6 +295,18 @@ exports.changePassword = async (req, res) => {
         user_id,
       ]);
       res.status(201).send("Succesfully Changed Password");
+    } else if (admin.rowCount !== 0) {
+      const saltRound = 10;
+      const salt = await bcrypt.genSalt(saltRound);
+      const bcryptPassword = await bcrypt.hash(password, salt);
+
+      await pool.query("UPDATE admin SET password=$1 where ad_id=$2", [
+        bcryptPassword,
+        user_id,
+      ]);
+      res.status(201).send("Succesfully Changed Password");
+    } else {
+      return res.status(401).send("Unauthorised Access");
     }
   } catch (error) {
     console.error(error.message);
