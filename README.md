@@ -76,6 +76,9 @@ Runs the app in the development mode.
 
 Runs the app in the production mode.
 
+## User Manual 
+- [manual] (https://drive.google.com/file/d/1F1OBT3qhlMHHofuMwZetVLx-Woj0So72/view?usp=sharing)
+
 ## Install the following projects
 
 - [emsfrontend] (https://github.com/KannepallyKoushik/emsfrontend.git)
